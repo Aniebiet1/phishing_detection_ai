@@ -1,0 +1,12 @@
+ pandas
+ numpy
+ scikit-learn
+ matplotlib
+ seaborn
+ nltk
+ tldextract
+ beautifulsoup4
+ requests
+ fastapi
+ uvicorn[standard]
+ joblib
