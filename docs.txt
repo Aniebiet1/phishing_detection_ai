@@ -1,0 +1,278 @@
+Phishing Detection AI - Multi-Model Training and Evaluation Plan
+Date: 2026-03-15
+
+Goal
+Build a robust, repeatable training workflow that compares multiple ML models on the same data split, then selects and saves the best model. Implement this in both:
+1) train.py (script-first, automation-friendly)
+2) Jupyter Notebook (experiment-first, visual analysis friendly)
+
+You requested that training_report.json include multiple models and their evaluation. This plan does exactly that.
+
+==================================================
+1) WHAT WILL CHANGE
+==================================================
+
+A) train.py will be upgraded from single-model training to multi-model benchmarking.
+B) A new notebook will be added (or an existing one can be created) to reproduce the same model comparison interactively.
+C) training_report.json will become a structured report containing:
+- dataset summary
+- split information
+- per-model metrics
+- ranking table
+- selected best model
+- optional timing and class-wise metrics
+D) The best model (based on a chosen metric) will be saved to saved_models/phishing_model.joblib for FastAPI inference compatibility.
+
+==================================================
+2) DATA SOURCES AND TASK DEFINITION
+==================================================
+
+Datasets to use (already in your data folder):
+1) data/phishing_email.csv
+   - text column: text_combined
+   - label column: label
+2) data/PhiUSIIL_Phishing_URL_Dataset.csv
+   - text column: URL
+   - label column: label
+
+Unified task:
+- Binary text classification
+- label 0 = legitimate
+- label 1 = phishing
+
+Unified training table:
+- text (string)
+- label (int 0/1)
+- source (email/url) [kept for analysis only]
+
+==================================================
+3) MODELS TO COMPARE (INITIAL SET)
+==================================================
+
+All models will use the same text vectorization pipeline (TF-IDF) for fairness.
+
+Baseline comparison set:
+1) LogisticRegression
+2) LinearSVC
+3) MultinomialNB
+4) RandomForestClassifier
+5) SGDClassifier (linear)
+
+Why these models:
+- LogisticRegression and LinearSVC are strong text baselines.
+- MultinomialNB is often competitive and very fast.
+- SGDClassifier scales well and can be tuned.
+- RandomForest gives a non-linear alternative (usually weaker on sparse text, but useful as a comparator).
+
+Optional future additions:
+- XGBoost/LightGBM (if added to dependencies)
+- Calibrated SVM for better probability estimates
+
+==================================================
+4) EVALUATION STRATEGY
+==================================================
+
+Single holdout split (initial implementation):
+- train_test_split with stratify=label
+- fixed random_state for reproducibility
+
+Primary metric (for model selection):
+- F1 score for phishing class (label=1)
+
+Secondary metrics (always logged):
+- Accuracy
+- Precision (class 1)
+- Recall (class 1)
+- F1 (class 1)
+- Macro F1
+- Weighted F1
+- Confusion matrix
+- Inference support count
+- Optional train/eval time per model
+
+Why F1 for phishing class as primary:
+- Phishing detection cares about balancing false negatives and false positives.
+- Accuracy alone can hide class imbalance effects.
+
+==================================================
+5) train.py DETAILED IMPLEMENTATION PLAN
+==================================================
+
+Step 1: Refactor model construction
+- Add a function like get_model_candidates() that returns a dictionary:
+  {
+    "logistic_regression": Pipeline(...),
+    "linear_svc": Pipeline(...),
+    "multinomial_nb": Pipeline(...),
+    "random_forest": Pipeline(...),
+    "sgd_classifier": Pipeline(...)
+  }
+
+Step 2: Standardized training/evaluation loop
+- For each candidate model:
+  1) fit on x_train, y_train
+  2) predict on x_test
+  3) compute metrics
+  4) store metrics and metadata in results list
+
+Step 3: Ranking and best-model selection
+- Sort results by selection metric (default: phishing_f1 descending)
+- tie-breakers (if needed): macro_f1 then accuracy
+- select best model name + object
+
+Step 4: Persist artifacts
+- Save best model to --model-out path (default saved_models/phishing_model.joblib)
+- Save full report to --report-out (default saved_models/training_report.json)
+
+Step 5: Console summary
+- Print compact ranking table (top to bottom)
+- Print selected best model + key metrics
+
+Step 6: CLI options enhancement
+Add optional args such as:
+- --selection-metric phishing_f1|accuracy|macro_f1
+- --models logistic_regression,linear_svc,... (subset selection)
+- --include-source-prefix (optional text preprocessing enhancement)
+
+==================================================
+6) JUPYTER NOTEBOOK PLAN (DETAILED)
+==================================================
+
+Notebook purpose:
+- interactive experimentation and visualization
+- same logic as train.py, but easier to inspect
+
+Proposed notebook structure:
+1) Title + objective markdown
+2) Imports and settings
+3) Load both datasets
+4) Data cleaning + label normalization
+5) Exploratory stats:
+   - class distribution
+   - text length distribution
+   - source distribution
+6) Define model candidates
+7) Train/evaluate all models
+8) Build comparison DataFrame and sort by selection metric
+9) Plot bar chart of accuracy/F1 per model
+10) Save best model and full JSON report
+11) Quick sanity inference examples
+
+Notebook output artifacts:
+- saved_models/phishing_model.joblib
+- saved_models/training_report.json
+- (optional) saved_models/model_comparison.csv
+
+Consistency rule:
+- The notebook and train.py should produce comparable results when same split seed and model settings are used.
+
+==================================================
+7) training_report.json NEW STRUCTURE
+==================================================
+
+Current report is single-model. New report will be multi-model.
+
+Target structure (example):
+{
+  "timestamp_utc": "2026-03-15T...",
+  "data": {
+    "email_dataset": "data/phishing_email.csv",
+    "url_dataset": "data/PhiUSIIL_Phishing_URL_Dataset.csv",
+    "rows_used": 318280,
+    "train_rows": 254624,
+    "test_rows": 63656,
+    "label_distribution": {
+      "legitimate_0": 140540,
+      "phishing_1": 177740
+    }
+  },
+  "selection": {
+    "metric": "phishing_f1",
+    "best_model": "linear_svc"
+  },
+  "models": [
+    {
+      "name": "logistic_regression",
+      "accuracy": 0.9912,
+      "precision_phishing": 0.9917,
+      "recall_phishing": 0.9925,
+      "phishing_f1": 0.9921,
+      "macro_f1": 0.9911,
+      "weighted_f1": 0.9912,
+      "confusion_matrix": [[27814, 294], [266, 35282]],
+      "train_seconds": 23.4,
+      "predict_seconds": 1.2
+    },
+    {
+      "name": "linear_svc",
+      "accuracy": ...
+    }
+  ],
+  "ranking": [
+    "linear_svc",
+    "logistic_regression",
+    "sgd_classifier",
+    "multinomial_nb",
+    "random_forest"
+  ],
+  "model_output": "saved_models/phishing_model.joblib"
+}
+
+Benefits:
+- You can inspect all models in one report.
+- API still uses the best model only.
+- Easy to compare experiments over time.
+
+==================================================
+8) API COMPATIBILITY GUARANTEE
+==================================================
+
+FastAPI currently loads one model file:
+- saved_models/phishing_model.joblib
+
+No breaking API changes are required.
+- main.py can remain unchanged.
+- train.py will ensure the best model is always saved to that path.
+- predict endpoint keeps working immediately after training.
+
+==================================================
+9) VALIDATION AND ACCEPTANCE CHECKLIST
+==================================================
+
+After implementation, verify:
+1) python train.py runs successfully.
+2) training_report.json contains multiple models under models[].
+3) ranking exists and best_model is present.
+4) saved_models/phishing_model.joblib is created.
+5) uvicorn main:app --reload starts cleanly.
+6) POST /predict works with the new best model.
+7) notebook runs top-to-bottom and reproduces comparison outputs.
+
+==================================================
+10) RISKS AND MITIGATIONS
+==================================================
+
+Risk: Some models do not expose predict_proba.
+Mitigation: Use class predictions for metrics; probability-dependent metrics are optional.
+
+Risk: Large dataset can increase training time.
+Mitigation: Keep efficient defaults and allow --models to run subset quickly.
+
+Risk: Label format inconsistencies.
+Mitigation: Keep strict label normalization with clear error messages.
+
+Risk: Report size grows.
+Mitigation: Store concise summary metrics by default; include full classification report optionally.
+
+==================================================
+11) EXECUTION ORDER I WILL FOLLOW (AFTER YOUR APPROVAL)
+==================================================
+
+1) Update train.py to support multiple models and ranking.
+2) Add enhanced report generation in training_report.json.
+3) Add/update a notebook implementing the same comparison pipeline.
+4) Run training once to produce fresh report and model artifacts.
+5) Validate FastAPI still loads and predicts using selected best model.
+6) Update README with the new multi-model commands.
+
+End of plan.
