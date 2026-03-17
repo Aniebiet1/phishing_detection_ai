@@ -1,0 +1,200 @@
+{
+  "users": [
+    {
+      "email": "josephcosmos743@gmail.com",
+      "salt": "0d9076b1e538142bda6eb96d8aa3cf81",
+      "password_hash": "f3d455a173c0c63bcc648bf6240e07994ab639aeb574dd43ea91757be824cce3",
+      "joined_at": "2026-03-16T15:59:54.093541+00:00",
+      "last_login": "2026-03-16T16:55:01.538867+00:00",
+      "last_prediction_at": "2026-03-16T19:32:41.022931+00:00",
+      "history": [
+        {
+          "timestamp": "2026-03-16T19:32:41.022931+00:00",
+          "preview": "\u0262oogle.news",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 11
+        },
+        {
+          "timestamp": "2026-03-16T19:23:30.473107+00:00",
+          "preview": "http://runsales.xxt",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 19
+        },
+        {
+          "timestamp": "2026-03-16T19:23:15.029727+00:00",
+          "preview": "http://runsales.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 19
+        },
+        {
+          "timestamp": "2026-03-16T19:22:54.010962+00:00",
+          "preview": "https://runsales.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 20
+        },
+        {
+          "timestamp": "2026-03-16T19:22:33.762530+00:00",
+          "preview": "http://runsales.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 19
+        },
+        {
+          "timestamp": "2026-03-16T19:22:11.016401+00:00",
+          "preview": "https://runsales.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 20
+        },
+        {
+          "timestamp": "2026-03-16T19:21:15.701687+00:00",
+          "preview": "acadeva.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 11
+        },
+        {
+          "timestamp": "2026-03-16T18:49:07.034841+00:00",
+          "preview": "sell.com",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 8
+        },
+        {
+          "timestamp": "2026-03-16T18:48:38.255218+00:00",
+          "preview": "sell.com",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 8
+        },
+        {
+          "timestamp": "2026-03-16T18:48:36.936247+00:00",
+          "preview": "sell.com",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 8
+        },
+        {
+          "timestamp": "2026-03-16T18:48:17.831121+00:00",
+          "preview": "sell.com",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 8
+        },
+        {
+          "timestamp": "2026-03-16T18:40:40.215327+00:00",
+          "preview": "sell.com",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 8
+        },
+        {
+          "timestamp": "2026-03-16T18:39:02.173066+00:00",
+          "preview": "http//yahoo.scam.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 20
+        },
+        {
+          "timestamp": "2026-03-16T18:38:43.526160+00:00",
+          "preview": "http//yahoo.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 15
+        },
+        {
+          "timestamp": "2026-03-16T18:38:31.175844+00:00",
+          "preview": "http//yahoo.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 15
+        },
+        {
+          "timestamp": "2026-03-16T18:38:17.971768+00:00",
+          "preview": "http//yahoo.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 15
+        },
+        {
+          "timestamp": "2026-03-16T18:38:16.968885+00:00",
+          "preview": "http//yahoo.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 15
+        },
+        {
+          "timestamp": "2026-03-16T18:38:05.887085+00:00",
+          "preview": "http//yahoo.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 15
+        },
+        {
+          "timestamp": "2026-03-16T18:37:36.206449+00:00",
+          "preview": "yahoo.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 9
+        },
+        {
+          "timestamp": "2026-03-16T18:28:24.854762+00:00",
+          "preview": "acadeva.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 11
+        },
+        {
+          "timestamp": "2026-03-16T18:20:03.915376+00:00",
+          "preview": "Subject: Action Required: Unusual sign-in activity detected on your Microsoft account From: Microsoft Security Team no-reply@security-alert-ms.com (Note the slight domain misspelli",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "email",
+          "input_length": 625
+        },
+        {
+          "timestamp": "2026-03-16T16:00:28.965322+00:00",
+          "preview": "Subject: Action Required: Unusual sign-in activity detected on your Microsoft account From: Microsoft Security Team no-reply@security-alert-ms.com (Note the slight domain misspelli",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "email",
+          "input_length": 625
+        }
+      ]
+    }
+  ],
+  "sessions": {
+    "2mm9t54duvKUzY3rZq93pL8JOu36eI2TS1ZbHocaAUE": {
+      "email": "josephcosmos743@gmail.com",
+      "created_at": "2026-03-16T15:59:54.109162+00:00"
+    },
+    "_WnzqeSYWV4Dbkla3g7uy184nSVv3anO0wc61cJWznw": {
+      "email": "josephcosmos743@gmail.com",
+      "created_at": "2026-03-16T16:55:01.523782+00:00"
+    }
+  }
+}
