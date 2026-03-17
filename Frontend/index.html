@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micheal Ai | Phishing Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body data-page="home">
+    <div class="page-shell">
+        <header class="site-header">
+            <a class="brand" href="/">
+                <span class="brand-mark" aria-hidden="true">
+                    <span class="brand-grid"></span>
+                    <span class="brand-path brand-path-left"></span>
+                    <span class="brand-path brand-path-right"></span>
+                    <span class="brand-node brand-node-top"></span>
+                    <span class="brand-node brand-node-mid"></span>
+                    <span class="brand-node brand-node-bottom"></span>
+                    <span class="brand-spark"></span>
+                </span>
+                <span>
+                    <strong>Micheal Ai</strong>
+                    <small>Phishing intelligence platform</small>
+                </span>
+            </a>
+            <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-expanded="false" aria-controls="topNavMenu" aria-label="Open navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="top-nav" id="topNavMenu">
+                <a href="/">Home</a>
+                <a href="/insights">Model Intelligence</a>
+                <a href="/dashboard">Workspace</a>
+                <button id="themeToggle" class="ghost-button icon-button" type="button" aria-label="Toggle appearance">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 3.2a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4.2a1 1 0 0 1 1-1zM6.3 5.6a1 1 0 0 1 1.4 0L9 6.9a1 1 0 0 1-1.4 1.4L6.3 7a1 1 0 0 1 0-1.4zm11.4 0a1 1 0 0 1 0 1.4l-1.3 1.3A1 1 0 1 1 15 6.9l1.3-1.3a1 1 0 0 1 1.4 0zM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm-8.8 3a1 1 0 1 1 0 2H5a1 1 0 1 1 0-2H3.2zm15.8 0a1 1 0 1 1 0 2H21a1 1 0 1 1 0-2h-1.8zM7.6 15.7A1 1 0 0 1 9 17.1l-1.3 1.3a1 1 0 0 1-1.4-1.4l1.3-1.3zm8.8 0a1 1 0 0 1 1.4 0l1.3 1.3a1 1 0 0 1-1.4 1.4L16.4 17a1 1 0 0 1 0-1.3zM12 18a1 1 0 0 1 1 1v1.8a1 1 0 1 1-2 0V19a1 1 0 0 1 1-1z"/>
+                    </svg>
+                    <span class="sr-only">Appearance</span>
+                </button>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero-grid reveal-up">
+                <div class="hero-copy card glow-card reveal-on-scroll">
+                    <div class="eyebrow">Applied security intelligence</div>
+                    <h1>Review suspicious URLs and emails with fast, model-backed phishing analysis.</h1>
+                    <p>
+                        Submit a URL, email body, or plain text. Micheal Ai returns a phishing decision,
+                        confidence score, and optional user-level history for signed-in sessions.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="primary-button" href="#predictor">Start analysis</a>
+                        <a class="secondary-button" href="/insights">Review model report</a>
+                    </div>
+                    <div class="hero-note-strip">
+                        <span>Five-model training comparison</span>
+                        <span>Confidence-first decision output</span>
+                        <span>Per-user usage history</span>
+                    </div>
+                    <div class="hero-stats">
+                        <article>
+                            <span class="stat-value" id="bestModelName">Linear SVC</span>
+                            <span class="stat-label">Selected production classifier</span>
+                        </article>
+                        <article>
+                            <span class="stat-value" id="bestModelScore">99.47%</span>
+                            <span class="stat-label">Phishing F1 on validation data</span>
+                        </article>
+                        <article>
+                            <span class="stat-value" id="rowsUsed">318,280</span>
+                            <span class="stat-label">Merged training records</span>
+                        </article>
+                    </div>
+                </div>
+
+                <aside class="hero-panel card stagger-item reveal-on-scroll">
+                    <div class="hero-panel-topline">
+                        <div class="panel-badge">Analytics overview</div>
+                        <span class="live-pill"><span class="status-dot online"></span>Live</span>
+                    </div>
+                    <div class="analytics-frame">
+                        <div class="analytics-header">
+                            <div>
+                                <span class="analytics-label">System readiness</span>
+                                <strong id="serviceStatus">Checking API...</strong>
+                            </div>
+                            <span class="analytics-score" id="heroSelectionMetric">F1</span>
+                        </div>
+                        <p id="serviceStatusText">Waiting for backend readiness data.</p>
+                        <div class="analytics-grid">
+                            <article>
+                                <span>Best model</span>
+                                <strong id="heroBestModel">Linear SVC</strong>
+                                <small id="heroBestMetric">Validation metric pending</small>
+                            </article>
+                            <article>
+                                <span>Train / test split</span>
+                                <strong id="heroSplit">-</strong>
+                                <small>Stratified holdout split</small>
+                            </article>
+                            <article>
+                                <span>Coverage</span>
+                                <strong>Email + URL</strong>
+                                <small>Unified text pipeline</small>
+                            </article>
+                            <article>
+                                <span>Tracked usage</span>
+                                <strong>Per user</strong>
+                                <small>Saved after signed-in scans</small>
+                            </article>
+                        </div>
+                        <div class="signal-strip" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="hero-activity-list">
+                            <div class="activity-row">
+                                <span class="activity-dot"></span>
+                                <div>
+                                    <strong>Decision output</strong>
+                                    <small>Confidence shown as an immediate visual score.</small>
+                                </div>
+                            </div>
+                            <div class="activity-row">
+                                <span class="activity-dot"></span>
+                                <div>
+                                    <strong>Model intelligence</strong>
+                                    <small>Ranking, math, and references in one view.</small>
+                                </div>
+                            </div>
+                            <div class="activity-row">
+                                <span class="activity-dot"></span>
+                                <div>
+                                    <strong>User workspace</strong>
+                                    <small>Each signed-in account keeps its own history.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </section>
+
+            <section id="predictor" class="predictor-grid">
+                <article class="card reveal-on-scroll">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">Analysis workspace</div>
+                            <h2>Submit content for review</h2>
+                        </div>
+                        <span class="pill" id="authStatePill">Guest session</span>
+                    </div>
+                    <form id="predictionForm" class="predict-form">
+                        <div class="input-switch" role="group" aria-label="Input source">
+                            <button class="switch-option active" type="button" data-source="url">URL</button>
+                            <button class="switch-option" type="button" data-source="email">Email</button>
+                        </div>
+                        <label class="field-label" for="predictionText">Paste the URL or the full email content</label>
+                        <textarea id="predictionText" rows="10" placeholder="Example: https://secure-bank.example.verify-login-now.com or the complete body of a suspicious email"></textarea>
+                        <div class="form-actions">
+                            <button class="primary-button" type="submit">Run classification</button>
+                            <button class="ghost-button" id="useRawMode" type="button">Use raw text mode</button>
+                        </div>
+                        <p class="helper-text">Raw text mode is better for long multi-line content when you want to avoid JSON escaping issues during manual testing.</p>
+                    </form>
+                </article>
+
+                <article class="card result-card stagger-item reveal-on-scroll">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">Assessment result</div>
+                            <h2 id="resultHeadline">Awaiting classification</h2>
+                        </div>
+                        <span class="pill muted" id="resultMode">No assessment yet</span>
+                    </div>
+                    <p id="resultCopy" class="result-copy">The model decision will appear here with a confidence visualization and request details.</p>
+                    <div class="chart-wrap">
+                        <canvas id="scoreChart" width="240" height="240" aria-label="Prediction confidence chart"></canvas>
+                        <div class="chart-center">
+                            <span id="scorePercent">0%</span>
+                            <small>confidence</small>
+                        </div>
+                    </div>
+                    <div class="result-meta">
+                        <div>
+                            <span>Decision</span>
+                            <strong id="resultLabel">Unknown</strong>
+                        </div>
+                        <div>
+                            <span>Confidence</span>
+                            <strong id="resultScore">0.0000</strong>
+                        </div>
+                        <div>
+                            <span>Recorded session</span>
+                            <strong id="resultUser">Not signed in</strong>
+                        </div>
+                    </div>
+                    <div id="resultDetails" class="result-details"></div>
+                </article>
+            </section>
+
+            <section class="feature-band reveal-on-scroll">
+                <article class="feature-card">
+                    <h3>Single decision surface</h3>
+                    <p>One classification flow covers suspicious URLs, phishing-style email content, and general text prompts through the selected model pipeline.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Clear model context</h3>
+                    <p>Prediction confidence is visible immediately, while the report page exposes ranking, training volume, and supporting model references.</p>
+                </article>
+                <article class="feature-card">
+                    <h3>Persistent user history</h3>
+                    <p>Authenticated users retain a private usage trail, making it easier to revisit prior checks and measure activity over time.</p>
+                </article>
+            </section>
+        </main>
+    </div>
+    <script src="/assets/app.js" defer></script>
+</body>
+</html>
