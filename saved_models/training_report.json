@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-03-15T14:50:14.666019+00:00",
+  "timestamp_utc": "2026-03-26T12:44:06.554429+00:00",
   "data": {
     "email_dataset": "data\\phishing_email.csv",
     "url_dataset": "data\\PhiUSIIL_Phishing_URL_Dataset.csv",
@@ -61,8 +61,8 @@
         }
       },
       "name": "linear_svc",
-      "train_seconds": 225.7226257000002,
-      "predict_seconds": 22.61791269999958
+      "train_seconds": 176.44032440002775,
+      "predict_seconds": 18.539039800001774
     },
     {
       "accuracy": 0.992993590549202,
@@ -109,8 +109,8 @@
         }
       },
       "name": "passive_aggressive",
-      "train_seconds": 77.19752919999883,
-      "predict_seconds": 11.53188340000088
+      "train_seconds": 90.53592709999066,
+      "predict_seconds": 13.375917500001378
     },
     {
       "accuracy": 0.9917211260525324,
@@ -157,8 +157,8 @@
         }
       },
       "name": "logistic_regression",
-      "train_seconds": 206.1593214000004,
-      "predict_seconds": 17.53209760000027
+      "train_seconds": 72.48401740001282,
+      "predict_seconds": 8.76046999997925
     },
     {
       "accuracy": 0.9900559256001006,
@@ -205,8 +205,8 @@
         }
       },
       "name": "sgd_classifier",
-      "train_seconds": 77.49320799999987,
-      "predict_seconds": 9.980277299999216
+      "train_seconds": 114.16864059999352,
+      "predict_seconds": 16.09627239999827
     },
     {
       "accuracy": 0.9727598341083323,
@@ -253,8 +253,8 @@
         }
       },
       "name": "multinomial_nb",
-      "train_seconds": 113.52550289999999,
-      "predict_seconds": 11.437538299998778
+      "train_seconds": 113.80376829998568,
+      "predict_seconds": 9.635789299965836
     }
   ],
   "ranking": [

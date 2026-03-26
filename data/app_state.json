@@ -6,8 +6,24 @@
       "password_hash": "f3d455a173c0c63bcc648bf6240e07994ab639aeb574dd43ea91757be824cce3",
       "joined_at": "2026-03-16T15:59:54.093541+00:00",
       "last_login": "2026-03-16T16:55:01.538867+00:00",
-      "last_prediction_at": "2026-03-16T19:32:41.022931+00:00",
+      "last_prediction_at": "2026-03-26T12:22:46.743787+00:00",
       "history": [
+        {
+          "timestamp": "2026-03-26T12:22:46.743787+00:00",
+          "preview": "wellsfargo.com-security.net/login",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 33
+        },
+        {
+          "timestamp": "2026-03-25T20:28:50.712645+00:00",
+          "preview": "google.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 10
+        },
         {
           "timestamp": "2026-03-16T19:32:41.022931+00:00",
           "preview": "\u0262oogle.news",
@@ -185,6 +201,15 @@
           "input_length": 625
         }
       ]
+    },
+    {
+      "email": "ikemokorochukwuemekamicheal@gmail.com",
+      "salt": "183b9004ee813e6ef008ac267ff58c3e",
+      "password_hash": "eaf0b8296a5f429c751eba41504ba458bd7dbb14252c58b94572b1eec456f381",
+      "joined_at": "2026-03-26T12:44:57.147795+00:00",
+      "last_login": "2026-03-26T12:44:57.147795+00:00",
+      "last_prediction_at": null,
+      "history": []
     }
   ],
   "sessions": {
@@ -195,6 +220,10 @@
     "_WnzqeSYWV4Dbkla3g7uy184nSVv3anO0wc61cJWznw": {
       "email": "josephcosmos743@gmail.com",
       "created_at": "2026-03-16T16:55:01.523782+00:00"
+    },
+    "USEcIUwMwpd65PlNrn_pW04l1dSeEqHzo3KBOBNZhVk": {
+      "email": "ikemokorochukwuemekamicheal@gmail.com",
+      "created_at": "2026-03-26T12:44:57.147795+00:00"
     }
   }
 }
