@@ -468,7 +468,7 @@ body.is-ready .page-shell {
 .report-stat-grid,
 .mini-tiles,
 .feature-band {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
 }
 
 .hero-stats article,
@@ -742,6 +742,15 @@ body[data-theme="dark"] .analytics-grid article {
     min-width: 0;
 }
 
+.result-copy,
+.community-row strong,
+.profile-card > strong,
+.history-table span,
+.ranking-meta,
+.community-meta {
+    overflow-wrap: anywhere;
+}
+
 .predict-form textarea,
 .auth-form input {
     width: 100%;
@@ -799,7 +808,16 @@ body[data-theme="dark"] .analytics-grid article {
 .chart-wrap {
     position: relative;
     width: 240px;
+    max-width: 100%;
     margin: 28px auto 22px;
+}
+
+.chart-wrap canvas {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
 }
 
 .chart-center {
@@ -835,6 +853,10 @@ body[data-theme="dark"] .analytics-grid article {
     border-radius: 999px;
     background: var(--surface-muted);
     color: var(--text-soft);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .insights-layout,
@@ -852,8 +874,14 @@ body[data-theme="dark"] .analytics-grid article {
     gap: 16px;
 }
 
+.hero-grid > *,
+.predictor-grid > *,
+.feature-band > * {
+    min-width: 0;
+}
+
 .algorithm-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 }
 
 .ranking-item,
@@ -903,7 +931,7 @@ body[data-theme="dark"] .analytics-grid article {
 
 .profile-metrics {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
     gap: 12px;
 }
 
@@ -1062,6 +1090,14 @@ body[data-theme="dark"] .analytics-grid article {
 
     .analytics-grid {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .hero-actions .primary-button,
+    .hero-actions .secondary-button,
+    .form-actions .primary-button,
+    .form-actions .ghost-button,
+    .split-actions .secondary-button {
+        min-width: 0;
     }
 
     #predictor .section-heading {

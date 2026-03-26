@@ -207,9 +207,34 @@
       "salt": "183b9004ee813e6ef008ac267ff58c3e",
       "password_hash": "eaf0b8296a5f429c751eba41504ba458bd7dbb14252c58b94572b1eec456f381",
       "joined_at": "2026-03-26T12:44:57.147795+00:00",
-      "last_login": "2026-03-26T13:00:50.925630+00:00",
-      "last_prediction_at": null,
-      "history": []
+      "last_login": "2026-03-26T14:10:04.292581+00:00",
+      "last_prediction_at": "2026-03-26T14:11:26.970167+00:00",
+      "history": [
+        {
+          "timestamp": "2026-03-26T14:11:26.970167+00:00",
+          "preview": "acadeva.xyz",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 11
+        },
+        {
+          "timestamp": "2026-03-26T13:45:19.049025+00:00",
+          "preview": "google.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 10
+        },
+        {
+          "timestamp": "2026-03-26T13:32:28.127778+00:00",
+          "preview": "google.com",
+          "label": "legitimate",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 10
+        }
+      ]
     }
   ],
   "sessions": {
@@ -236,6 +261,10 @@
     "tbdHU9nE0WywLDYZNKob9ic7VY4p0xRTthKjPWwyg2w": {
       "email": "ikemokorochukwuemekamicheal@gmail.com",
       "created_at": "2026-03-26T13:00:50.925630+00:00"
+    },
+    "FEE5j6Q-oWbnNttxm0wQMGODasdM33JwZHLRcXIbigk": {
+      "email": "ikemokorochukwuemekamicheal@gmail.com",
+      "created_at": "2026-03-26T14:10:04.292581+00:00"
     }
   }
 }

@@ -19,9 +19,10 @@ from utils.app_state import (
 from utils.model_utils import load_model, predict_text
 
 
-MODEL_PATH = Path("saved_models/phishing_model.joblib")
-REPORT_PATH = Path("saved_models/training_report.json")
-FRONTEND_DIR = Path("Frontend")
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "saved_models" / "phishing_model.joblib"
+REPORT_PATH = BASE_DIR / "saved_models" / "training_report.json"
+FRONTEND_DIR = BASE_DIR / "Frontend"
 
 
 class PredictionRequest(BaseModel):
@@ -68,6 +69,15 @@ def _get_loaded_model():
     """Return loaded model or raise a clear HTTP error if unavailable."""
 
     model = getattr(app.state, "model", None)
+    if model is None and MODEL_PATH.exists():
+        # Allow recovery without restarting the API if model file is created after startup.
+        try:
+            app.state.model = load_model(str(MODEL_PATH))
+            app.state.model_load_error = None
+            model = app.state.model
+        except Exception as exc:
+            app.state.model_load_error = str(exc)
+
     if model is None:
         error_detail = getattr(app.state, "model_load_error", "Model not loaded.")
         raise HTTPException(status_code=500, detail=error_detail)

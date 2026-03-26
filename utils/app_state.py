@@ -12,7 +12,8 @@ from pathlib import Path
 from threading import Lock
 
 
-STATE_PATH = Path("data/app_state.json")
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATE_PATH = BASE_DIR / "data" / "app_state.json"
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 STATE_LOCK = Lock()
 

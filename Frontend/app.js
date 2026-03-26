@@ -328,14 +328,18 @@ function renderPredictionResult(data) {
     const details = document.getElementById("resultDetails");
     if (details) {
         details.innerHTML = "";
+        const displayEmail = state.auth?.user?.email ? shortenEmail(state.auth.user.email, 15) : null;
         const fragments = [
             `Source: ${data.details?.source || state.source}`,
             `Input length: ${data.details?.input_length || 0}`,
-            state.auth?.user?.email ? `Saved for: ${state.auth.user.email}` : "Guest submission",
+            displayEmail ? `Saved for: ${displayEmail}` : "Guest submission",
         ];
         fragments.forEach((value) => {
             const chip = document.createElement("span");
             chip.textContent = value;
+            if (displayEmail && value.startsWith("Saved for:")) {
+                chip.title = `Saved for: ${state.auth.user.email}`;
+            }
             details.appendChild(chip);
         });
     }
@@ -557,8 +561,9 @@ async function loadCommunityUsers() {
         data.users.forEach((user, index) => {
             const row = document.createElement("article");
             row.className = "community-row";
+            const shortEmail = shortenEmail(user.email, 15);
             row.innerHTML = `
-                <strong>#${index + 1} ${user.email}</strong>
+                <strong title="${escapeHtml(user.email)}">#${index + 1} ${shortEmail}</strong>
                 <span class="community-meta">Predictions: ${user.prediction_count}</span>
                 <span class="community-meta">Last activity: ${formatDate(user.last_prediction_at || user.last_login)}</span>
             `;
@@ -585,8 +590,9 @@ function renderProfile(user, message) {
 
     authState.textContent = "Signed in";
     profileCard.className = "profile-card";
+    const shortEmail = shortenEmail(user.email, 15);
     profileCard.innerHTML = `
-        <strong>${user.email}</strong>
+        <strong title="${escapeHtml(user.email)}">${shortEmail}</strong>
         <div class="profile-metrics">
             <article class="profile-metric">
                 <span>Joined</span>
@@ -658,7 +664,7 @@ function updateAuthPill() {
     const pill = document.getElementById("authStatePill");
     if (pill) {
         if (state.auth?.user?.email) {
-            const shortEmail = shortenEmail(state.auth.user.email, 34);
+            const shortEmail = shortenEmail(state.auth.user.email, 15);
             pill.textContent = `Signed in as ${shortEmail}`;
             pill.title = `Signed in as ${state.auth.user.email}`;
         } else {
@@ -674,22 +680,8 @@ function shortenEmail(email, maxLength) {
         return value;
     }
 
-    const [localPart, domainPart] = value.split("@");
-    if (!localPart || !domainPart) {
-        return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
-    }
-
-    const minDomain = Math.min(domainPart.length, 12);
-    const minLocal = Math.min(localPart.length, 10);
-    const reserve = minDomain + minLocal + 4;
-    if (reserve >= maxLength) {
-        return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
-    }
-
-    const remaining = maxLength - reserve;
-    const keepLocal = Math.min(localPart.length, minLocal + Math.ceil(remaining * 0.6));
-    const keepDomain = Math.min(domainPart.length, minDomain + Math.floor(remaining * 0.4));
-    return `${localPart.slice(0, keepLocal)}...@${domainPart.slice(-keepDomain)}`;
+    const keep = Math.max(3, maxLength - 4);
+    return `${value.slice(0, keep)}....`;
 }
 
 function authHeaders() {
