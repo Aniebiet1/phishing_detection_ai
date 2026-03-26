@@ -328,7 +328,7 @@ function renderPredictionResult(data) {
     const details = document.getElementById("resultDetails");
     if (details) {
         details.innerHTML = "";
-        const displayEmail = state.auth?.user?.email ? shortenEmail(state.auth.user.email, 15) : null;
+        const displayEmail = state.auth?.user?.email ? shortenEmail(state.auth.user.email, 10) : null;
         const fragments = [
             `Source: ${data.details?.source || state.source}`,
             `Input length: ${data.details?.input_length || 0}`,
@@ -561,7 +561,7 @@ async function loadCommunityUsers() {
         data.users.forEach((user, index) => {
             const row = document.createElement("article");
             row.className = "community-row";
-            const shortEmail = shortenEmail(user.email, 15);
+            const shortEmail = shortenEmail(user.email, 10);
             row.innerHTML = `
                 <strong title="${escapeHtml(user.email)}">#${index + 1} ${shortEmail}</strong>
                 <span class="community-meta">Predictions: ${user.prediction_count}</span>
@@ -590,7 +590,7 @@ function renderProfile(user, message) {
 
     authState.textContent = "Signed in";
     profileCard.className = "profile-card";
-    const shortEmail = shortenEmail(user.email, 15);
+    const shortEmail = shortenEmail(user.email, 10);
     profileCard.innerHTML = `
         <strong title="${escapeHtml(user.email)}">${shortEmail}</strong>
         <div class="profile-metrics">
@@ -664,7 +664,7 @@ function updateAuthPill() {
     const pill = document.getElementById("authStatePill");
     if (pill) {
         if (state.auth?.user?.email) {
-            const shortEmail = shortenEmail(state.auth.user.email, 15);
+            const shortEmail = shortenEmail(state.auth.user.email, 10);
             pill.textContent = `Signed in as ${shortEmail}`;
             pill.title = `Signed in as ${state.auth.user.email}`;
         } else {
@@ -680,8 +680,8 @@ function shortenEmail(email, maxLength) {
         return value;
     }
 
-    const keep = Math.max(3, maxLength - 4);
-    return `${value.slice(0, keep)}....`;
+    const keep = Math.max(1, maxLength - 3);
+    return `${value.slice(0, keep)}...`;
 }
 
 function authHeaders() {

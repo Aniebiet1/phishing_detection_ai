@@ -5,9 +5,17 @@
       "salt": "0d9076b1e538142bda6eb96d8aa3cf81",
       "password_hash": "f3d455a173c0c63bcc648bf6240e07994ab639aeb574dd43ea91757be824cce3",
       "joined_at": "2026-03-16T15:59:54.093541+00:00",
-      "last_login": "2026-03-16T16:55:01.538867+00:00",
-      "last_prediction_at": "2026-03-26T12:22:46.743787+00:00",
+      "last_login": "2026-03-26T14:17:10.888267+00:00",
+      "last_prediction_at": "2026-03-26T14:17:38.810955+00:00",
       "history": [
+        {
+          "timestamp": "2026-03-26T14:17:38.810955+00:00",
+          "preview": "buy you free food",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "email",
+          "input_length": 17
+        },
         {
           "timestamp": "2026-03-26T12:22:46.743787+00:00",
           "preview": "wellsfargo.com-security.net/login",
@@ -207,9 +215,33 @@
       "salt": "183b9004ee813e6ef008ac267ff58c3e",
       "password_hash": "eaf0b8296a5f429c751eba41504ba458bd7dbb14252c58b94572b1eec456f381",
       "joined_at": "2026-03-26T12:44:57.147795+00:00",
-      "last_login": "2026-03-26T14:10:04.292581+00:00",
-      "last_prediction_at": "2026-03-26T14:11:26.970167+00:00",
+      "last_login": "2026-03-26T14:28:32.539035+00:00",
+      "last_prediction_at": "2026-03-26T14:30:56.065067+00:00",
       "history": [
+        {
+          "timestamp": "2026-03-26T14:30:56.065067+00:00",
+          "preview": "try.xy",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 6
+        },
+        {
+          "timestamp": "2026-03-26T14:29:14.340101+00:00",
+          "preview": "try.xy",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "url",
+          "input_length": 6
+        },
+        {
+          "timestamp": "2026-03-26T14:16:46.844286+00:00",
+          "preview": "buy you free gift cards here",
+          "label": "phishing",
+          "score": 1.0,
+          "source": "email",
+          "input_length": 28
+        },
         {
           "timestamp": "2026-03-26T14:11:26.970167+00:00",
           "preview": "acadeva.xyz",
@@ -265,6 +297,18 @@
     "FEE5j6Q-oWbnNttxm0wQMGODasdM33JwZHLRcXIbigk": {
       "email": "ikemokorochukwuemekamicheal@gmail.com",
       "created_at": "2026-03-26T14:10:04.292581+00:00"
+    },
+    "YXyveHs3P1z9OZQRF9yT5oUjw8TUXnVTSh-mtkp6W7w": {
+      "email": "josephcosmos743@gmail.com",
+      "created_at": "2026-03-26T14:17:10.888267+00:00"
+    },
+    "9qPcEUGTHMXr9Bj98AWRCMMQXEg0oUw0N0psFz7kdKQ": {
+      "email": "ikemokorochukwuemekamicheal@gmail.com",
+      "created_at": "2026-03-26T14:28:12.134643+00:00"
+    },
+    "ExzLDt47jw4HavdrfYrUF_3wF28bwyPJ6m71c8yukw4": {
+      "email": "ikemokorochukwuemekamicheal@gmail.com",
+      "created_at": "2026-03-26T14:28:32.539035+00:00"
     }
   }
 }
