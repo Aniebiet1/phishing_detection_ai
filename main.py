@@ -17,6 +17,7 @@ from utils.app_state import (
     record_prediction,
 )
 from utils.model_utils import load_model, predict_text
+from utils.db import init_db
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -140,6 +141,8 @@ def _predict_and_log(
 @app.on_event("startup")
 def startup_event() -> None:
     """Load persisted assets on application startup."""
+
+    init_db()
 
     try:
         app.state.model = load_model(str(MODEL_PATH))
