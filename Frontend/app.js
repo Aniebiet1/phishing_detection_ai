@@ -657,8 +657,39 @@ function renderHistory(payload, message) {
 function updateAuthPill() {
     const pill = document.getElementById("authStatePill");
     if (pill) {
-        pill.textContent = state.auth?.user?.email ? `Signed in as ${state.auth.user.email}` : "Guest session";
+        if (state.auth?.user?.email) {
+            const shortEmail = shortenEmail(state.auth.user.email, 34);
+            pill.textContent = `Signed in as ${shortEmail}`;
+            pill.title = `Signed in as ${state.auth.user.email}`;
+        } else {
+            pill.textContent = "Guest session";
+            pill.removeAttribute("title");
+        }
     }
+}
+
+function shortenEmail(email, maxLength) {
+    const value = String(email || "").trim();
+    if (!value || value.length <= maxLength) {
+        return value;
+    }
+
+    const [localPart, domainPart] = value.split("@");
+    if (!localPart || !domainPart) {
+        return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
+    }
+
+    const minDomain = Math.min(domainPart.length, 12);
+    const minLocal = Math.min(localPart.length, 10);
+    const reserve = minDomain + minLocal + 4;
+    if (reserve >= maxLength) {
+        return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
+    }
+
+    const remaining = maxLength - reserve;
+    const keepLocal = Math.min(localPart.length, minLocal + Math.ceil(remaining * 0.6));
+    const keepDomain = Math.min(domainPart.length, minDomain + Math.floor(remaining * 0.4));
+    return `${localPart.slice(0, keepLocal)}...@${domainPart.slice(-keepDomain)}`;
 }
 
 function authHeaders() {

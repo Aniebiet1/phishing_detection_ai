@@ -39,6 +39,7 @@ body[data-theme="dark"] {
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
@@ -51,6 +52,7 @@ body {
     opacity: 0;
     transition: opacity 420ms ease, background 240ms ease, color 240ms ease;
     overflow-x: hidden;
+    overflow-y: auto;
 }
 
 body.is-ready {
@@ -730,12 +732,14 @@ body[data-theme="dark"] .analytics-grid article {
     padding: 8px 12px;
     font-size: 0.77rem;
     line-height: 1.28;
-    text-align: right;
-    justify-content: flex-end;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    text-align: left;
+    justify-content: flex-start;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     flex-shrink: 1;
+    display: inline-block;
+    min-width: 0;
 }
 
 .predict-form textarea,
@@ -1070,6 +1074,7 @@ body[data-theme="dark"] .analytics-grid article {
         max-width: 100%;
         justify-content: flex-start;
         text-align: left;
+        display: block;
     }
 }
 
