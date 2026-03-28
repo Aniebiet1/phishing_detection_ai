@@ -162,7 +162,6 @@ outputs/
 *.onnx
 
 # Data files
-*.csv
 *.tsv
 *.dat
 *.npz
