@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 from typing import Any, Tuple
 
@@ -43,11 +44,31 @@ def predict_text(model: Any, text: str) -> Tuple[str, float]:
 
     raw_label = model.predict([text])[0]
 
-    score = 1.0
+    score = 0.5
     if hasattr(model, "predict_proba"):
         proba = model.predict_proba([text])
         # Use the max probability across classes as the confidence score.
         score = float(max(proba[0]))
+    elif hasattr(model, "decision_function"):
+        decision = model.decision_function([text])
+
+        # Convert decision margins to a probability-like confidence value.
+        if isinstance(decision, (list, tuple)):
+            values = [float(x) for x in decision]
+        else:
+            try:
+                values = [float(x) for x in decision[0]]  # type: ignore[index]
+            except Exception:
+                values = [float(decision[0])]  # type: ignore[index]
+
+        if len(values) == 1:
+            prob_pos = 1.0 / (1.0 + math.exp(-values[0]))
+            score = float(max(prob_pos, 1.0 - prob_pos))
+        else:
+            exp_vals = [math.exp(v) for v in values]
+            denom = sum(exp_vals) or 1.0
+            probs = [v / denom for v in exp_vals]
+            score = float(max(probs))
 
     label_str = str(raw_label).strip().lower()
     if label_str in {"1", "true", "phishing", "spam", "malicious", "fraud"}:

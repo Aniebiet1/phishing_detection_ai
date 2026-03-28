@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 from collections.abc import Callable
 from datetime import datetime, timezone
@@ -9,9 +10,11 @@ from time import perf_counter
 from typing import Any
 
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.feature_extraction.text import HashingVectorizer, TfidfVectorizer
 from sklearn.linear_model import LogisticRegression, PassiveAggressiveClassifier, SGDClassifier
 from sklearn.metrics import (
     accuracy_score,
@@ -22,13 +25,15 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import FeatureUnion, Pipeline
+from sklearn.preprocessing import FunctionTransformer
 from sklearn.svm import LinearSVC
 
 
 DEFAULT_MODELS = [
     "logistic_regression",
     "linear_svc",
+    "calibrated_linear_svc",
     "multinomial_nb",
     "sgd_classifier",
     "passive_aggressive",
@@ -89,14 +94,54 @@ def parse_args() -> argparse.Namespace:
         default=",".join(DEFAULT_MODELS),
         help=(
             "Comma-separated model names to evaluate. "
-            "Available: logistic_regression, linear_svc, multinomial_nb, sgd_classifier, passive_aggressive"
+            "Available: logistic_regression, linear_svc, calibrated_linear_svc, multinomial_nb, sgd_classifier, passive_aggressive"
         ),
     )
     parser.add_argument(
         "--max-features",
         type=int,
-        default=100_000,
-        help="Maximum TF-IDF vocabulary size. Lower this to use less memory (default: 100000).",
+        default=40_000,
+        help="Maximum word TF-IDF vocabulary size. Lower this to use less memory (default: 40000).",
+    )
+    parser.add_argument(
+        "--char-features",
+        type=int,
+        default=16_384,
+        help="Number of hashed character features for URL robustness (default: 16384).",
+    )
+    parser.add_argument(
+        "--word-min-df",
+        type=int,
+        default=5,
+        help="Minimum document frequency for word n-grams (default: 5).",
+    )
+    parser.add_argument(
+        "--char-max-chars",
+        type=int,
+        default=512,
+        help="Maximum number of characters per sample for char features (default: 512).",
+    )
+    parser.add_argument(
+        "--disable-char-features",
+        action="store_true",
+        help="Disable character hashing features to minimize memory usage.",
+    )
+    parser.add_argument(
+        "--prefer-calibrated",
+        action="store_true",
+        help=(
+            "Prefer calibrated_linear_svc for production if its selection metric is close to the top model. "
+            "Useful when you want better confidence calibration."
+        ),
+    )
+    parser.add_argument(
+        "--calibrated-margin",
+        type=float,
+        default=0.002,
+        help=(
+            "Maximum score gap allowed when preferring calibrated_linear_svc over the top-ranked model "
+            "(default: 0.002)."
+        ),
     )
     return parser.parse_args()
 
@@ -170,21 +215,90 @@ def prepare_training_data(email_path: Path, url_path: Path) -> pd.DataFrame:
     return combined
 
 
-def build_vectorizer(max_features: int = 100_000) -> TfidfVectorizer:
+def build_word_vectorizer(max_features: int = 40_000, min_df: int = 5) -> TfidfVectorizer:
     return TfidfVectorizer(
         ngram_range=(1, 2),
-        min_df=3,
+        min_df=min_df,
         max_df=0.95,
         sublinear_tf=True,
         max_features=max_features,
     )
 
 
-def get_model_candidates(random_state: int, max_features: int = 100_000) -> dict[str, Callable[[], BaseEstimator]]:
+def _truncate_for_char_features(texts: Any, max_chars: int) -> list[str]:
+    return [str(item)[:max_chars] for item in texts]
+
+
+def build_char_vectorizer(n_features: int = 16_384, max_chars: int = 512) -> Pipeline:
+    # Hashing avoids building a giant character vocabulary in memory.
+    return Pipeline(
+        steps=[
+            (
+                "char_truncate",
+                FunctionTransformer(
+                    lambda x: _truncate_for_char_features(x, max_chars=max_chars),
+                    validate=False,
+                ),
+            ),
+            (
+                "char_hash",
+                HashingVectorizer(
+                    analyzer="char_wb",
+                    ngram_range=(3, 4),
+                    n_features=n_features,
+                    alternate_sign=False,
+                    lowercase=True,
+                    norm="l2",
+                    binary=True,
+                    dtype=np.float32,
+                ),
+            ),
+        ]
+    )
+
+
+def build_vectorizer(
+    max_features: int = 40_000,
+    char_features: int = 16_384,
+    word_min_df: int = 5,
+    char_max_chars: int = 512,
+    use_char_features: bool = True,
+) -> FeatureUnion:
+    transformers: list[tuple[str, Any]] = [
+        ("word_tfidf", build_word_vectorizer(max_features=max_features, min_df=word_min_df))
+    ]
+    if use_char_features:
+        transformers.append(
+            (
+                "char_tfidf",
+                build_char_vectorizer(n_features=char_features, max_chars=char_max_chars),
+            )
+        )
+
+    return FeatureUnion(transformer_list=transformers)
+
+
+def get_model_candidates(
+    random_state: int,
+    max_features: int = 40_000,
+    char_features: int = 16_384,
+    word_min_df: int = 5,
+    char_max_chars: int = 512,
+    use_char_features: bool = True,
+) -> dict[str, Callable[[], BaseEstimator]]:
     return {
         "logistic_regression": lambda: Pipeline(
             steps=[
-                ("tfidf", build_vectorizer(max_features=max_features)),
+                (
+                    "tfidf",
+                    build_vectorizer(
+                        max_features=max_features,
+                        char_features=char_features,
+                        word_min_df=word_min_df,
+                        char_max_chars=char_max_chars,
+                        use_char_features=use_char_features,
+                    ),
+                ),
                 (
                     "clf",
                     LogisticRegression(
@@ -197,7 +311,16 @@ def get_model_candidates(random_state: int, max_features: int = 100_000) -> dict
         ),
         "linear_svc": lambda: Pipeline(
             steps=[
-                ("tfidf", build_vectorizer(max_features=max_features)),
+                (
+                    "tfidf",
+                    build_vectorizer(
+                        max_features=max_features,
+                        char_features=char_features,
+                        word_min_df=word_min_df,
+                        char_max_chars=char_max_chars,
+                        use_char_features=use_char_features,
+                    ),
+                ),
                 (
                     "clf",
                     LinearSVC(
@@ -207,15 +330,58 @@ def get_model_candidates(random_state: int, max_features: int = 100_000) -> dict
                 ),
             ]
         ),
+        "calibrated_linear_svc": lambda: Pipeline(
+            steps=[
+                (
+                    "tfidf",
+                    build_vectorizer(
+                        max_features=max_features,
+                        char_features=char_features,
+                        word_min_df=word_min_df,
+                        char_max_chars=char_max_chars,
+                        use_char_features=use_char_features,
+                    ),
+                ),
+                (
+                    "clf",
+                    CalibratedClassifierCV(
+                        estimator=LinearSVC(
+                            class_weight="balanced",
+                            random_state=random_state,
+                        ),
+                        method="sigmoid",
+                        cv=3,
+                    ),
+                ),
+            ]
+        ),
         "multinomial_nb": lambda: Pipeline(
             steps=[
-                ("tfidf", build_vectorizer(max_features=max_features)),
+                (
+                    "tfidf",
+                    build_vectorizer(
+                        max_features=max_features,
+                        char_features=char_features,
+                        word_min_df=word_min_df,
+                        char_max_chars=char_max_chars,
+                        use_char_features=use_char_features,
+                    ),
+                ),
                 ("clf", MultinomialNB(alpha=0.5)),
             ]
         ),
         "sgd_classifier": lambda: Pipeline(
             steps=[
-                ("tfidf", build_vectorizer(max_features=max_features)),
+                (
+                    "tfidf",
+                    build_vectorizer(
+                        max_features=max_features,
+                        char_features=char_features,
+                        word_min_df=word_min_df,
+                        char_max_chars=char_max_chars,
+                        use_char_features=use_char_features,
+                    ),
+                ),
                 (
                     "clf",
                     SGDClassifier(
@@ -230,7 +396,16 @@ def get_model_candidates(random_state: int, max_features: int = 100_000) -> dict
         ),
         "passive_aggressive": lambda: Pipeline(
             steps=[
-                ("tfidf", build_vectorizer(max_features=max_features)),
+                (
+                    "tfidf",
+                    build_vectorizer(
+                        max_features=max_features,
+                        char_features=char_features,
+                        word_min_df=word_min_df,
+                        char_max_chars=char_max_chars,
+                        use_char_features=use_char_features,
+                    ),
+                ),
                 (
                     "clf",
                     PassiveAggressiveClassifier(
@@ -256,7 +431,11 @@ def parse_requested_models(models_arg: str, available: dict[str, Any]) -> list[s
     return requested
 
 
-def evaluate_predictions(y_true: pd.Series, y_pred: pd.Series) -> dict[str, Any]:
+def evaluate_predictions(
+    y_true: pd.Series,
+    y_pred: pd.Series,
+    source_true: pd.Series | None = None,
+) -> dict[str, Any]:
     precision, recall, phishing_f1, _ = precision_recall_fscore_support(
         y_true, y_pred, average="binary", pos_label=1, zero_division=0
     )
@@ -267,7 +446,7 @@ def evaluate_predictions(y_true: pd.Series, y_pred: pd.Series) -> dict[str, Any]
     matrix = confusion_matrix(y_true, y_pred).tolist()
     full_report = classification_report(y_true, y_pred, output_dict=True, zero_division=0)
 
-    return {
+    metrics: dict[str, Any] = {
         "accuracy": accuracy,
         "precision_phishing": float(precision),
         "recall_phishing": float(recall),
@@ -278,12 +457,49 @@ def evaluate_predictions(y_true: pd.Series, y_pred: pd.Series) -> dict[str, Any]
         "classification_report": full_report,
     }
 
+    if source_true is not None:
+        source_series = source_true.reset_index(drop=True)
+        y_true_series = pd.Series(y_true).reset_index(drop=True)
+        y_pred_series = pd.Series(y_pred).reset_index(drop=True)
+
+        per_source: dict[str, Any] = {}
+        for source_name in sorted(source_series.unique().tolist()):
+            mask = source_series == source_name
+            if mask.sum() == 0:
+                continue
+
+            ys = y_true_series[mask]
+            yp = y_pred_series[mask]
+            p, r, f1, _ = precision_recall_fscore_support(
+                ys,
+                yp,
+                average="binary",
+                pos_label=1,
+                zero_division=0,
+            )
+            per_source[source_name] = {
+                "rows": int(mask.sum()),
+                "accuracy": float(accuracy_score(ys, yp)),
+                "precision_phishing": float(p),
+                "recall_phishing": float(r),
+                "phishing_f1": float(f1),
+                "label_distribution": {
+                    "legitimate_0": int((ys == 0).sum()),
+                    "phishing_1": int((ys == 1).sum()),
+                },
+            }
+
+        metrics["per_source"] = per_source
+
+    return metrics
+
 
 def train_and_evaluate_models(
     x_train: pd.Series,
     y_train: pd.Series,
     x_test: pd.Series,
     y_test: pd.Series,
+    source_test: pd.Series,
     model_builders: dict[str, Callable[[], BaseEstimator]],
     requested_models: list[str],
 ) -> tuple[list[dict[str, Any]], dict[str, BaseEstimator]]:
@@ -294,20 +510,28 @@ def train_and_evaluate_models(
         model = model_builders[model_name]()
 
         train_start = perf_counter()
-        model.fit(x_train, y_train)
+        try:
+            model.fit(x_train, y_train)
+        except MemoryError as exc:
+            raise MemoryError(
+                "Training ran out of memory. Try lower settings such as: "
+                "--max-features 20000 --char-features 8192 --word-min-df 8 --char-max-chars 256 "
+                "or add --disable-char-features."
+            ) from exc
         train_seconds = perf_counter() - train_start
 
         predict_start = perf_counter()
         y_pred = model.predict(x_test)
         predict_seconds = perf_counter() - predict_start
 
-        metrics = evaluate_predictions(y_test, y_pred)
+        metrics = evaluate_predictions(y_test, y_pred, source_true=source_test)
         metrics["name"] = model_name
         metrics["train_seconds"] = float(train_seconds)
         metrics["predict_seconds"] = float(predict_seconds)
 
         results.append(metrics)
         fitted_models[model_name] = model
+        gc.collect()
 
     return results, fitted_models
 
@@ -322,6 +546,31 @@ def rank_models(results: list[dict[str, Any]], selection_metric: str) -> list[di
         ),
         reverse=True,
     )
+
+
+def select_production_model(
+    ranked_results: list[dict[str, Any]],
+    selection_metric: str,
+    prefer_calibrated: bool,
+    calibrated_margin: float,
+) -> tuple[str, dict[str, Any]]:
+    top = ranked_results[0]
+    selected = top
+    reason = "top_ranked"
+
+    if prefer_calibrated:
+        calibrated = next((item for item in ranked_results if item["name"] == "calibrated_linear_svc"), None)
+        if calibrated is not None:
+            gap = float(top[selection_metric]) - float(calibrated[selection_metric])
+            if gap <= calibrated_margin:
+                selected = calibrated
+                reason = "calibrated_within_margin"
+
+    return selected["name"], {
+        "strategy": "prefer_calibrated_if_close" if prefer_calibrated else "top_ranked",
+        "reason": reason,
+        "calibrated_margin": float(calibrated_margin),
+    }
 
 
 def print_ranking_table(ranked_results: list[dict[str, Any]], selection_metric: str) -> None:
@@ -358,18 +607,28 @@ def main() -> None:
             f"Invalid selection metric '{args.selection_metric}'. "
             f"Choose from: {SELECTION_METRICS}"
         )
+    if args.calibrated_margin < 0:
+        raise ValueError("--calibrated-margin must be >= 0")
 
     df = prepare_training_data(email_path=email_path, url_path=url_path)
 
-    x_train, x_test, y_train, y_test = train_test_split(
+    x_train, x_test, y_train, y_test, _source_train, source_test = train_test_split(
         df["text"],
         df["label"],
+        df["source"],
         test_size=args.test_size,
         random_state=args.random_state,
         stratify=df["label"],
     )
 
-    model_builders = get_model_candidates(random_state=args.random_state, max_features=args.max_features)
+    model_builders = get_model_candidates(
+        random_state=args.random_state,
+        max_features=args.max_features,
+        char_features=args.char_features,
+        word_min_df=args.word_min_df,
+        char_max_chars=args.char_max_chars,
+        use_char_features=not args.disable_char_features,
+    )
     requested_models = parse_requested_models(args.models, model_builders)
 
     results, fitted_models = train_and_evaluate_models(
@@ -377,12 +636,18 @@ def main() -> None:
         y_train=y_train,
         x_test=x_test,
         y_test=y_test,
+        source_test=source_test,
         model_builders=model_builders,
         requested_models=requested_models,
     )
     ranked_results = rank_models(results, selection_metric=args.selection_metric)
 
-    best_model_name = ranked_results[0]["name"]
+    best_model_name, selection_details = select_production_model(
+        ranked_results=ranked_results,
+        selection_metric=args.selection_metric,
+        prefer_calibrated=args.prefer_calibrated,
+        calibrated_margin=args.calibrated_margin,
+    )
     best_model = fitted_models[best_model_name]
 
     model_out.parent.mkdir(parents=True, exist_ok=True)
@@ -406,6 +671,7 @@ def main() -> None:
         "selection": {
             "metric": args.selection_metric,
             "best_model": best_model_name,
+            "details": selection_details,
         },
         "models": ranked_results,
         "ranking": [result["name"] for result in ranked_results],
