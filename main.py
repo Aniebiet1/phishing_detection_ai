@@ -16,7 +16,7 @@ from utils.app_state import (
     get_user_history,
     record_prediction,
 )
-from utils.model_utils import load_model, predict_text
+from utils.model_utils import load_model, predict_text_with_metadata
 from utils.db import init_db
 
 
@@ -116,13 +116,14 @@ def _predict_and_log(
     mode: str,
 ) -> PredictionResponse:
     model = _get_loaded_model()
-    label, score = predict_text(model, text)
+    label, score, prediction_meta = predict_text_with_metadata(model, text=text, source=source)
     user = _resolve_user(authorization) if authorization else None
 
     details = {
         "source": source or mode,
         "input_length": len(text),
         "mode": mode,
+        **prediction_meta,
     }
     if user is not None:
         usage_entry = record_prediction(

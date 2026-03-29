@@ -46,7 +46,7 @@ This command will:
   - `multinomial_nb`
   - `sgd_classifier`
   - `passive_aggressive`
-- Rank models by selection metric (default: `phishing_f1`)
+- Rank models by selection metric (default: `accuracy`)
 - Save the best model to `saved_models/phishing_model.joblib`
 - Save all model metrics to `saved_models/training_report.json`
 
@@ -59,8 +59,8 @@ python train.py --email-data data/phishing_email.csv --url-data data/PhiUSIIL_Ph
 ```
 
 Available `--selection-metric` values:
-- `phishing_f1` (recommended)
 - `accuracy`
+- `phishing_f1`
 - `macro_f1`
 - `weighted_f1`
 

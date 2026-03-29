@@ -5,6 +5,7 @@ import gc
 import json
 from collections.abc import Callable
 from datetime import datetime, timezone
+from functools import partial
 from pathlib import Path
 from time import perf_counter
 from typing import Any
@@ -15,7 +16,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.feature_extraction.text import HashingVectorizer, TfidfVectorizer
-from sklearn.linear_model import LogisticRegression, PassiveAggressiveClassifier, SGDClassifier
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -28,6 +29,8 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.svm import LinearSVC
+
+from utils.vectorizer_utils import truncate_for_char_features
 
 
 DEFAULT_MODELS = [
@@ -84,7 +87,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--selection-metric",
         type=str,
-        default="phishing_f1",
+        default="accuracy",
         choices=SELECTION_METRICS,
         help="Metric used to rank models and select the best one.",
     )
@@ -100,13 +103,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--max-features",
         type=int,
-        default=40_000,
+        default=100_000,
         help="Maximum word TF-IDF vocabulary size. Lower this to use less memory (default: 40000).",
     )
     parser.add_argument(
         "--char-features",
         type=int,
-        default=16_384,
+        default=65536,
         help="Number of hashed character features for URL robustness (default: 16384).",
     )
     parser.add_argument(
@@ -215,7 +218,7 @@ def prepare_training_data(email_path: Path, url_path: Path) -> pd.DataFrame:
     return combined
 
 
-def build_word_vectorizer(max_features: int = 40_000, min_df: int = 5) -> TfidfVectorizer:
+def build_word_vectorizer(max_features: int = 100_000, min_df: int = 5) -> TfidfVectorizer:
     return TfidfVectorizer(
         ngram_range=(1, 2),
         min_df=min_df,
@@ -225,10 +228,6 @@ def build_word_vectorizer(max_features: int = 40_000, min_df: int = 5) -> TfidfV
     )
 
 
-def _truncate_for_char_features(texts: Any, max_chars: int) -> list[str]:
-    return [str(item)[:max_chars] for item in texts]
-
-
 def build_char_vectorizer(n_features: int = 16_384, max_chars: int = 512) -> Pipeline:
     # Hashing avoids building a giant character vocabulary in memory.
     return Pipeline(
@@ -236,7 +235,7 @@ def build_char_vectorizer(n_features: int = 16_384, max_chars: int = 512) -> Pip
             (
                 "char_truncate",
                 FunctionTransformer(
-                    lambda x: _truncate_for_char_features(x, max_chars=max_chars),
+                    partial(truncate_for_char_features, max_chars=max_chars),
                     validate=False,
                 ),
             ),
@@ -244,13 +243,13 @@ def build_char_vectorizer(n_features: int = 16_384, max_chars: int = 512) -> Pip
                 "char_hash",
                 HashingVectorizer(
                     analyzer="char_wb",
-                    ngram_range=(3, 4),
+                    ngram_range=(3, 5),
                     n_features=n_features,
                     alternate_sign=False,
                     lowercase=True,
                     norm="l2",
                     binary=True,
-                    dtype=np.float32,
+                    dtype=np.float64,
                 ),
             ),
         ]
@@ -258,8 +257,8 @@ def build_char_vectorizer(n_features: int = 16_384, max_chars: int = 512) -> Pip
 
 
 def build_vectorizer(
-    max_features: int = 40_000,
-    char_features: int = 16_384,
+    max_features: int = 100_000,
+    char_features: int = 65_536,
     word_min_df: int = 5,
     char_max_chars: int = 512,
     use_char_features: bool = True,
@@ -280,8 +279,8 @@ def build_vectorizer(
 
 def get_model_candidates(
     random_state: int,
-    max_features: int = 40_000,
-    char_features: int = 16_384,
+    max_features: int = 100_000,
+    char_features: int = 65_536,
     word_min_df: int = 5,
     char_max_chars: int = 512,
     use_char_features: bool = True,
@@ -408,7 +407,11 @@ def get_model_candidates(
                 ),
                 (
                     "clf",
-                    PassiveAggressiveClassifier(
+                    SGDClassifier(
+                        loss="hinge",
+                        penalty=None,
+                        learning_rate="pa1",
+                        eta0=1.0,
                         max_iter=2000,
                         class_weight="balanced",
                         random_state=random_state,
