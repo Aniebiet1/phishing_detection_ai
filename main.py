@@ -1,4 +1,5 @@
 ﻿import json
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -118,23 +119,28 @@ def _predict_and_log(
     model = _get_loaded_model()
     label, score, prediction_meta = predict_text_with_metadata(model, text=text, source=source)
     user = _resolve_user(authorization) if authorization else None
+    is_authenticated = user is not None
+    guest_id = None if is_authenticated else f"guest_{uuid.uuid4().hex[:12]}"
+
+    usage_entry = record_prediction(
+        email=user["email"] if is_authenticated else None,
+        text=text,
+        label=label,
+        score=score,
+        source=source or mode,
+    )
 
     details = {
         "source": source or mode,
         "input_length": len(text),
         "mode": mode,
+        "user_type": "authenticated" if is_authenticated else "anonymous",
+        "guest_id": guest_id,
+        "usage_entry": usage_entry,
         **prediction_meta,
     }
     if user is not None:
-        usage_entry = record_prediction(
-            email=user["email"],
-            text=text,
-            label=label,
-            score=score,
-            source=source or mode,
-        )
         details["user"] = user["email"]
-        details["usage_entry"] = usage_entry
 
     return PredictionResponse(label=label, score=score, details=details)
 

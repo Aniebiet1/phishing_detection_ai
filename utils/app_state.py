@@ -14,6 +14,7 @@ from .db import get_db_session
 from .models import PredictionHistory, SessionToken, User
 
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+UNKNOWN_USER_EMAIL = "unknown@guest.local"
 
 
 def _utc_now() -> str:
@@ -54,6 +55,27 @@ def _public_user(user: User, prediction_count: int) -> dict:
         "last_prediction_at": user.last_prediction_at.isoformat() if user.last_prediction_at else None,
         "prediction_count": int(prediction_count),
     }
+
+
+def _ensure_unknown_user(db) -> User:
+    user = db.execute(select(User).where(User.email == UNKNOWN_USER_EMAIL)).scalar_one_or_none()
+    if user is not None:
+        return user
+
+    # Placeholder credentials for anonymous usage tracking only.
+    salt = secrets.token_hex(16)
+    now = datetime.now(timezone.utc)
+    user = User(
+        email=UNKNOWN_USER_EMAIL,
+        salt=salt,
+        password_hash=_hash_password(secrets.token_urlsafe(24), salt),
+        joined_at=now,
+        last_login=None,
+        last_prediction_at=None,
+    )
+    db.add(user)
+    db.flush()
+    return user
 
 
 def create_user(email: str, password: str) -> tuple[str, dict]:
@@ -115,11 +137,14 @@ def get_user_by_token(token: str) -> dict | None:
         return _public_user(user, prediction_count=prediction_count)
 
 
-def record_prediction(email: str, text: str, label: str, score: float, source: str) -> dict:
+def record_prediction(email: str | None, text: str, label: str, score: float, source: str) -> dict:
     with get_db_session() as db:
-        user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
-        if user is None:
-            raise ValueError("User account not found.")
+        if email:
+            user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+            if user is None:
+                raise ValueError("User account not found.")
+        else:
+            user = _ensure_unknown_user(db)
 
         timestamp = datetime.now(timezone.utc)
         entry = {
