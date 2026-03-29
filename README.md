@@ -39,6 +39,7 @@ python train.py
 This command will:
 - Merge both datasets into one text-classification dataset
 - Normalize labels to binary (`0 = legitimate`, `1 = phishing`)
+- Add URL hard-example augmentation by default (typosquatting, subdomain spoofing, urgent-action domains, and shortener-style lures)
 - Split train/test with stratification
 - Train and evaluate multiple TF-IDF pipelines:
   - `logistic_regression`
@@ -55,8 +56,16 @@ Optional settings:
 ```powershell
 python train.py --selection-metric accuracy
 python train.py --models logistic_regression,linear_svc,multinomial_nb
+python train.py --url-augmentation-weight 3
+python train.py --disable-url-augmentation
 python train.py --email-data data/phishing_email.csv --url-data data/PhiUSIIL_Phishing_URL_Dataset.csv --model-out saved_models/phishing_model.joblib --report-out saved_models/training_report.json
 ```
+
+URL augmentation factors now covered during training:
+- Typosquatting (lookalike characters, repeated characters, leetspeak)
+- Subdomain spoofing (`brand.something-else.tld`)
+- Urgent-action keyword domains (`verify-account-now`, `failed-payment-alert`, etc.)
+- URL shortener-style obfuscation patterns
 
 Available `--selection-metric` values:
 - `accuracy`

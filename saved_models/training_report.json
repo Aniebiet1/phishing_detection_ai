@@ -1,14 +1,21 @@
 {
-  "timestamp_utc": "2026-03-29T09:06:54.175612+00:00",
+  "timestamp_utc": "2026-03-29T14:04:15.436760+00:00",
   "data": {
     "email_dataset": "data/phishing_email.csv",
     "url_dataset": "data/PhiUSIIL_Phishing_URL_Dataset.csv",
-    "rows_used": 318280,
-    "train_rows": 254624,
-    "test_rows": 63656,
+    "rows_used": 317718,
+    "augmentation": {
+      "enabled": true,
+      "weight": 2,
+      "base_rows": 318281,
+      "augmented_rows_added": 271,
+      "total_rows_after_dedup": 317718
+    },
+    "train_rows": 254174,
+    "test_rows": 63544,
     "label_distribution": {
-      "legitimate_0": 140540,
-      "phishing_1": 177740
+      "legitimate_0": 139783,
+      "phishing_1": 177935
     }
   },
   "selection": {
@@ -22,445 +29,91 @@
   },
   "models": [
     {
-      "accuracy": 0.9966853085333669,
-      "precision_phishing": 0.9960971500772147,
-      "recall_phishing": 0.9979745695960391,
-      "phishing_f1": 0.9970349760409202,
-      "macro_f1": 0.9966385587430019,
-      "weighted_f1": 0.9966848912913321,
+      "accuracy": 0.9966479919425909,
+      "precision_phishing": 0.9958230544965239,
+      "recall_phishing": 0.9982015904684295,
+      "phishing_f1": 0.9970109038858249,
+      "macro_f1": 0.9965978412029745,
+      "weighted_f1": 0.9966474394068985,
       "confusion_matrix": [
         [
-          27969,
-          139
+          27808,
+          149
         ],
         [
-          72,
-          35476
+          64,
+          35523
         ]
       ],
       "classification_report": {
         "0": {
-          "precision": 0.9974323312292714,
-          "recall": 0.9950547886722642,
-          "f1-score": 0.9962421414450836,
-          "support": 28108.0
+          "precision": 0.9977037887485649,
+          "recall": 0.9946703866652359,
+          "f1-score": 0.996184778520124,
+          "support": 27957.0
         },
         "1": {
-          "precision": 0.9960971500772147,
-          "recall": 0.9979745695960391,
-          "f1-score": 0.9970349760409202,
-          "support": 35548.0
+          "precision": 0.9958230544965239,
+          "recall": 0.9982015904684295,
+          "f1-score": 0.9970109038858249,
+          "support": 35587.0
         },
-        "accuracy": 0.9966853085333669,
+        "accuracy": 0.9966479919425909,
         "macro avg": {
-          "precision": 0.996764740653243,
-          "recall": 0.9965146791341517,
-          "f1-score": 0.9966385587430019,
-          "support": 63656.0
+          "precision": 0.9967634216225444,
+          "recall": 0.9964359885668327,
+          "f1-score": 0.9965978412029745,
+          "support": 63544.0
         },
         "weighted avg": {
-          "precision": 0.9966867138547378,
-          "recall": 0.9966853085333669,
-          "f1-score": 0.9966848912913321,
-          "support": 63656.0
+          "precision": 0.996650507717667,
+          "recall": 0.9966479919425909,
+          "f1-score": 0.9966474394068985,
+          "support": 63544.0
         }
       },
       "per_source": {
         "email": {
-          "rows": 16590,
-          "accuracy": 0.9931886678722122,
-          "precision_phishing": 0.9947466728928321,
-          "recall_phishing": 0.9920828967283735,
-          "phishing_f1": 0.9934129991256193,
+          "rows": 16477,
+          "accuracy": 0.993809552709838,
+          "precision_phishing": 0.9948598130841122,
+          "recall_phishing": 0.993235362724516,
+          "phishing_f1": 0.9940469242441928,
           "label_distribution": {
-            "legitimate_0": 8001,
-            "phishing_1": 8589
+            "legitimate_0": 7903,
+            "phishing_1": 8574
           }
         },
         "url": {
-          "rows": 47066,
-          "accuracy": 0.9979178175328263,
-          "precision_phishing": 0.9965248253170172,
-          "recall_phishing": 0.9998516265440113,
-          "phishing_f1": 0.9981854540068138,
+          "rows": 47014,
+          "accuracy": 0.9977240821882843,
+          "precision_phishing": 0.9961572568725983,
+          "recall_phishing": 0.9998887364165708,
+          "phishing_f1": 0.9980195087641365,
           "label_distribution": {
-            "legitimate_0": 20107,
-            "phishing_1": 26959
+            "legitimate_0": 20051,
+            "phishing_1": 26963
+          }
+        },
+        "url_augmented": {
+          "rows": 53,
+          "accuracy": 0.9245283018867925,
+          "precision_phishing": 0.9791666666666666,
+          "recall_phishing": 0.94,
+          "phishing_f1": 0.9591836734693877,
+          "label_distribution": {
+            "legitimate_0": 3,
+            "phishing_1": 50
           }
         }
       },
       "name": "linear_svc",
-      "train_seconds": 75.5730933570012,
-      "predict_seconds": 11.129328074999648
-    },
-    {
-      "accuracy": 0.9963868292069875,
-      "precision_phishing": 0.9962065864898281,
-      "recall_phishing": 0.997327557105885,
-      "phishing_f1": 0.9967667566351777,
-      "macro_f1": 0.9963362407499443,
-      "weighted_f1": 0.9963865586804794,
-      "confusion_matrix": [
-        [
-          27973,
-          135
-        ],
-        [
-          95,
-          35453
-        ]
-      ],
-      "classification_report": {
-        "0": {
-          "precision": 0.9966153626906086,
-          "recall": 0.9951970969119112,
-          "f1-score": 0.995905724864711,
-          "support": 28108.0
-        },
-        "1": {
-          "precision": 0.9962065864898281,
-          "recall": 0.997327557105885,
-          "f1-score": 0.9967667566351777,
-          "support": 35548.0
-        },
-        "accuracy": 0.9963868292069875,
-        "macro avg": {
-          "precision": 0.9964109745902183,
-          "recall": 0.9962623270088982,
-          "f1-score": 0.9963362407499443,
-          "support": 63656.0
-        },
-        "weighted avg": {
-          "precision": 0.9963870860727666,
-          "recall": 0.9963868292069875,
-          "f1-score": 0.9963865586804794,
-          "support": 63656.0
-        }
-      },
-      "per_source": {
-        "email": {
-          "rows": 16590,
-          "accuracy": 0.9922242314647378,
-          "precision_phishing": 0.9954321855235418,
-          "recall_phishing": 0.9895214809640237,
-          "phishing_f1": 0.9924680329304607,
-          "label_distribution": {
-            "legitimate_0": 8001,
-            "phishing_1": 8589
-          }
-        },
-        "url": {
-          "rows": 47066,
-          "accuracy": 0.9978540772532188,
-          "precision_phishing": 0.9964510166358596,
-          "recall_phishing": 0.9998145331800141,
-          "phishing_f1": 0.9981299413060786,
-          "label_distribution": {
-            "legitimate_0": 20107,
-            "phishing_1": 26959
-          }
-        }
-      },
-      "name": "calibrated_linear_svc",
-      "train_seconds": 94.14058157999898,
-      "predict_seconds": 11.34248553299949
-    },
-    {
-      "accuracy": 0.9963397008922961,
-      "precision_phishing": 0.995983258897222,
-      "recall_phishing": 0.997468211995049,
-      "phishing_f1": 0.9967251823637718,
-      "macro_f1": 0.9962882717901156,
-      "weighted_f1": 0.9963393371204536,
-      "confusion_matrix": [
-        [
-          27965,
-          143
-        ],
-        [
-          90,
-          35458
-        ]
-      ],
-      "classification_report": {
-        "0": {
-          "precision": 0.9967920156834789,
-          "recall": 0.994912480432617,
-          "f1-score": 0.9958513612164592,
-          "support": 28108.0
-        },
-        "1": {
-          "precision": 0.995983258897222,
-          "recall": 0.997468211995049,
-          "f1-score": 0.9967251823637718,
-          "support": 35548.0
-        },
-        "accuracy": 0.9963397008922961,
-        "macro avg": {
-          "precision": 0.9963876372903504,
-          "recall": 0.9961903462138331,
-          "f1-score": 0.9962882717901156,
-          "support": 63656.0
-        },
-        "weighted avg": {
-          "precision": 0.9963403742633792,
-          "recall": 0.9963397008922961,
-          "f1-score": 0.9963393371204536,
-          "support": 63656.0
-        }
-      },
-      "per_source": {
-        "email": {
-          "rows": 16590,
-          "accuracy": 0.9920433996383363,
-          "precision_phishing": 0.9934648150309254,
-          "recall_phishing": 0.9911514728140645,
-          "phishing_f1": 0.9923067956638303,
-          "label_distribution": {
-            "legitimate_0": 8001,
-            "phishing_1": 8589
-          }
-        },
-        "url": {
-          "rows": 47066,
-          "accuracy": 0.9978540772532188,
-          "precision_phishing": 0.9967815921870375,
-          "recall_phishing": 0.9994806929040395,
-          "phishing_f1": 0.9981293178492712,
-          "label_distribution": {
-            "legitimate_0": 20107,
-            "phishing_1": 26959
-          }
-        }
-      },
-      "name": "passive_aggressive",
-      "train_seconds": 66.35352876300021,
-      "predict_seconds": 11.472800804000144
-    },
-    {
-      "accuracy": 0.9930721377403544,
-      "precision_phishing": 0.9929235348628233,
-      "recall_phishing": 0.9946832451896028,
-      "phishing_f1": 0.9938026110541183,
-      "macro_f1": 0.9929745340277626,
-      "weighted_f1": 0.993071318196986,
-      "confusion_matrix": [
-        [
-          27856,
-          252
-        ],
-        [
-          189,
-          35359
-        ]
-      ],
-      "classification_report": {
-        "0": {
-          "precision": 0.9932608308076306,
-          "recall": 0.9910345809022343,
-          "f1-score": 0.9921464570014069,
-          "support": 28108.0
-        },
-        "1": {
-          "precision": 0.9929235348628233,
-          "recall": 0.9946832451896028,
-          "f1-score": 0.9938026110541183,
-          "support": 35548.0
-        },
-        "accuracy": 0.9930721377403544,
-        "macro avg": {
-          "precision": 0.9930921828352269,
-          "recall": 0.9928589130459186,
-          "f1-score": 0.9929745340277626,
-          "support": 63656.0
-        },
-        "weighted avg": {
-          "precision": 0.9930724715603324,
-          "recall": 0.9930721377403544,
-          "f1-score": 0.993071318196986,
-          "support": 63656.0
-        }
-      },
-      "per_source": {
-        "email": {
-          "rows": 16590,
-          "accuracy": 0.9819168173598554,
-          "precision_phishing": 0.9866150052835505,
-          "recall_phishing": 0.9783443939923158,
-          "phishing_f1": 0.9824622939319537,
-          "label_distribution": {
-            "legitimate_0": 8001,
-            "phishing_1": 8589
-          }
-        },
-        "url": {
-          "rows": 47066,
-          "accuracy": 0.997004206858454,
-          "precision_phishing": 0.9949066213921901,
-          "recall_phishing": 0.9998887199080084,
-          "phishing_f1": 0.9973914491332581,
-          "label_distribution": {
-            "legitimate_0": 20107,
-            "phishing_1": 26959
-          }
-        }
-      },
-      "name": "logistic_regression",
-      "train_seconds": 69.31605024700002,
-      "predict_seconds": 11.010105716000908
-    },
-    {
-      "accuracy": 0.9927579489757447,
-      "precision_phishing": 0.9920347777310335,
-      "recall_phishing": 0.9950208169235962,
-      "phishing_f1": 0.9935255536985801,
-      "macro_f1": 0.9926547014959599,
-      "weighted_f1": 0.9927564851516639,
-      "confusion_matrix": [
-        [
-          27824,
-          284
-        ],
-        [
-          177,
-          35371
-        ]
-      ],
-      "classification_report": {
-        "0": {
-          "precision": 0.9936787971858148,
-          "recall": 0.9898961149850576,
-          "f1-score": 0.9917838492933397,
-          "support": 28108.0
-        },
-        "1": {
-          "precision": 0.9920347777310335,
-          "recall": 0.9950208169235962,
-          "f1-score": 0.9935255536985801,
-          "support": 35548.0
-        },
-        "accuracy": 0.9927579489757447,
-        "macro avg": {
-          "precision": 0.9928567874584242,
-          "recall": 0.992458465954327,
-          "f1-score": 0.9926547014959599,
-          "support": 63656.0
-        },
-        "weighted avg": {
-          "precision": 0.9927607124243066,
-          "recall": 0.9927579489757447,
-          "f1-score": 0.9927564851516639,
-          "support": 63656.0
-        }
-      },
-      "per_source": {
-        "email": {
-          "rows": 16590,
-          "accuracy": 0.9833634719710669,
-          "precision_phishing": 0.9883679943602397,
-          "recall_phishing": 0.9793922458959133,
-          "phishing_f1": 0.983859649122807,
-          "label_distribution": {
-            "legitimate_0": 8001,
-            "phishing_1": 8589
-          }
-        },
-        "url": {
-          "rows": 47066,
-          "accuracy": 0.9960693494242128,
-          "precision_phishing": 0.9931844974948423,
-          "recall_phishing": 1.0,
-          "phishing_f1": 0.9965805962700774,
-          "label_distribution": {
-            "legitimate_0": 20107,
-            "phishing_1": 26959
-          }
-        }
-      },
-      "name": "sgd_classifier",
-      "train_seconds": 64.85143480199986,
-      "predict_seconds": 11.293560075000642
-    },
-    {
-      "accuracy": 0.9755561141133593,
-      "precision_phishing": 0.9883627377736912,
-      "recall_phishing": 0.9676212445144593,
-      "phishing_f1": 0.9778820184790334,
-      "macro_f1": 0.9752827809469709,
-      "weighted_f1": 0.9755865752042056,
-      "confusion_matrix": [
-        [
-          27703,
-          405
-        ],
-        [
-          1151,
-          34397
-        ]
-      ],
-      "classification_report": {
-        "0": {
-          "precision": 0.9601095168780758,
-          "recall": 0.9855912907357336,
-          "f1-score": 0.9726835434149081,
-          "support": 28108.0
-        },
-        "1": {
-          "precision": 0.9883627377736912,
-          "recall": 0.9676212445144593,
-          "f1-score": 0.9778820184790334,
-          "support": 35548.0
-        },
-        "accuracy": 0.9755561141133593,
-        "macro avg": {
-          "precision": 0.9742361273258835,
-          "recall": 0.9766062676250964,
-          "f1-score": 0.9752827809469709,
-          "support": 63656.0
-        },
-        "weighted avg": {
-          "precision": 0.9758872204157995,
-          "recall": 0.9755561141133593,
-          "f1-score": 0.9755865752042056,
-          "support": 63656.0
-        }
-      },
-      "per_source": {
-        "email": {
-          "rows": 16590,
-          "accuracy": 0.9301989150090416,
-          "precision_phishing": 0.9987917841320982,
-          "recall_phishing": 0.8662242403073699,
-          "phishing_f1": 0.9277964833520389,
-          "label_distribution": {
-            "legitimate_0": 8001,
-            "phishing_1": 8589
-          }
-        },
-        "url": {
-          "rows": 47066,
-          "accuracy": 0.9915437895720902,
-          "precision_phishing": 0.9855226117793295,
-          "recall_phishing": 0.9999258132720057,
-          "phishing_f1": 0.9926719693622036,
-          "label_distribution": {
-            "legitimate_0": 20107,
-            "phishing_1": 26959
-          }
-        }
-      },
-      "name": "multinomial_nb",
-      "train_seconds": 63.620145431999845,
-      "predict_seconds": 11.261181689000296
+      "train_seconds": 77.08179215000018,
+      "predict_seconds": 11.300030390000302
     }
   ],
   "ranking": [
-    "linear_svc",
-    "calibrated_linear_svc",
-    "passive_aggressive",
-    "logistic_regression",
-    "sgd_classifier",
-    "multinomial_nb"
+    "linear_svc"
   ],
   "model_output": "saved_models/phishing_model.joblib"
 }

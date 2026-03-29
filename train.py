@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import gc
 import json
+import re
 from collections.abc import Callable
 from datetime import datetime, timezone
 from functools import partial
@@ -42,6 +43,208 @@ DEFAULT_MODELS = [
     "passive_aggressive",
 ]
 SELECTION_METRICS = ["phishing_f1", "accuracy", "macro_f1", "weighted_f1"]
+
+PHISHING_URL_HARD_EXAMPLES = [
+    "amnazon.com",
+    "paypa1.com",
+    "goggle-login.net",
+    "faceboook-security.com",
+    "waImart.com",
+    "appIe-id.com",
+    "rnicrosoft.com",
+    "netflix-billing.co",
+    "instagrarn.com",
+    "wellsfarg0.com",
+    "chase-bank.net",
+    "banco-itauu.com",
+    "bankoffamerica.com",
+    "vvernmo.com",
+    "twitter-verify.org",
+    "linnkedin.com",
+    "fedexpress.com",
+    "us-ps.com",
+    "paypals-support.com",
+    "microsoft-365-update.com",
+    "paypal.com.secure-login.ru",
+    "amazon.prime-verify.it",
+    "apple.id-unlock.com.cn",
+    "microsoft.online-office.weebly.com",
+    "chase.account-update.xyz",
+    "netflix.payment-fail.site",
+    "google.security-apps.com.br",
+    "facebook.login-recovery.online",
+    "bankofamerica.com-access.tk",
+    "wellsfargo.verification.herokuapp.com",
+    "irs.gov.payment-tax.net",
+    "fedex.track-package.info",
+    "ups.delivery-notice.co",
+    "coinbase.secure-wallet.sh",
+    "binance.account-verify.app",
+    "steam.gift-cards.discount",
+    "roblox.robux-free.pro",
+    "disneyplus.subscription-renewal.com",
+    "adobe.pdf-reader-update.com",
+    "zoom.meeting-invite.us",
+    "your-account-has-been-locked-verify-now.com",
+    "secure-banking-alert-update.net",
+    "unauthorized-login-attempt-detection.org",
+    "confirm-your-identity-immediately.com",
+    "billing-issue-resolved-login.com",
+    "urgent-security-notification.net",
+    "tax-refund-portal-claim-now.gov.site",
+    "missing-package-redelivery-form.com",
+    "social-security-administration-alert.com",
+    "payroll-bonus-distribution-2026.com",
+    "it-helpdesk-password-reset-request.net",
+    "legal-notice-against-your-account.com",
+    "suspicious-activity-detected-login.com",
+    "failed-payment-notification-update.com",
+    "verify-your-credentials-to-avoid-suspension.com",
+    "refund-request-processing-center.com",
+    "loyalty-points-expiring-claim-now.com",
+    "exclusive-offer-valid-for-24-hours.net",
+    "membership-cancellation-avoidance.com",
+    "secure-web-portal-access.com",
+    "bit.ly/secure-paypal-login",
+    "tinyurl.com/security-update",
+    "t.co/XyZ123-verify",
+    "cutt.ly/bank-security",
+    "short.io/irs-payment",
+]
+
+LEGITIMATE_URL_HARD_NEGATIVES = [
+    "google.com",
+    "www.google.com",
+    "accounts.google.com",
+    "amazon.com",
+    "www.amazon.com",
+    "paypal.com",
+    "www.paypal.com",
+    "apple.com",
+    "appleid.apple.com",
+    "microsoft.com",
+    "login.microsoftonline.com",
+    "facebook.com",
+    "instagram.com",
+    "netflix.com",
+    "wellsfargo.com",
+    "chase.com",
+    "linkedin.com",
+    "venmo.com",
+    "bankofamerica.com",
+    "fedex.com",
+    "usps.com",
+    "ups.com",
+    "irs.gov",
+    "adobe.com",
+    "zoom.us",
+    "steamcommunity.com",
+    "help.netflix.com",
+    "support.google.com",
+    "status.aws.amazon.com",
+    "docs.python.org",
+]
+
+COMMON_BRANDS = [
+    "google",
+    "paypal",
+    "amazon",
+    "facebook",
+    "apple",
+    "microsoft",
+    "netflix",
+    "instagram",
+    "wellsfargo",
+    "linkedin",
+    "venmo",
+]
+
+
+def _generate_typosquatting_variants() -> list[str]:
+    replacements = {
+        "a": "4",
+        "e": "3",
+        "i": "1",
+        "o": "0",
+        "l": "1",
+        "m": "rn",
+        "w": "vv",
+    }
+    suffixes = ["-secure.com", "-verify.net", "-login.org", "-support.com"]
+    variants: set[str] = set()
+
+    for brand in COMMON_BRANDS:
+        lowered = brand.lower()
+        for ch, repl in replacements.items():
+            if ch in lowered:
+                variants.add(lowered.replace(ch, repl, 1) + ".com")
+
+        if len(lowered) > 3:
+            variants.add(lowered[:3] + lowered[3] + lowered[3:] + ".com")
+
+        variants.add(lowered + "s" + ".com")
+        for suffix in suffixes:
+            variants.add(lowered + suffix)
+
+    return sorted(variants)
+
+
+def _generate_brand_in_subdomain_spoofs() -> list[str]:
+    patterns = [
+        "{brand}.security-check-login.ru",
+        "{brand}.account-verify-session.cn",
+        "{brand}.billing-review-update.site",
+        "{brand}.support-center-reset.online",
+    ]
+    return [pattern.format(brand=brand) for brand in COMMON_BRANDS for pattern in patterns]
+
+
+def _generate_urgent_keyword_domains() -> list[str]:
+    phrases = [
+        "verify-account-now",
+        "failed-payment-alert",
+        "security-check-required",
+        "identity-confirmation-center",
+        "unauthorized-login-warning",
+        "suspended-access-unlock",
+    ]
+    tlds = [".com", ".net", ".org"]
+    out: list[str] = []
+    for phrase in phrases:
+        for tld in tlds:
+            out.append(f"{phrase}{tld}")
+            out.append(f"{phrase}-2026{tld}")
+    return out
+
+
+def _build_augmented_url_dataset(repeat: int = 1) -> pd.DataFrame:
+    if repeat < 1:
+        raise ValueError("--url-augmentation-weight must be >= 1")
+
+    phishing_urls = sorted(
+        set(
+            PHISHING_URL_HARD_EXAMPLES
+            + _generate_typosquatting_variants()
+            + _generate_brand_in_subdomain_spoofs()
+            + _generate_urgent_keyword_domains()
+        )
+    )
+
+    phishing_rows = [
+        {"text": url, "label": 1, "source": "url_augmented"}
+        for _ in range(repeat)
+        for url in phishing_urls
+    ]
+    legitimate_rows = [
+        {"text": url, "label": 0, "source": "url_augmented"}
+        for _ in range(repeat)
+        for url in LEGITIMATE_URL_HARD_NEGATIVES
+    ]
+
+    augmented = pd.DataFrame(phishing_rows + legitimate_rows)
+    augmented["text"] = augmented["text"].astype(str).str.strip().str.lower()
+    augmented = augmented.drop_duplicates(subset=["text", "label"])
+    return augmented
 
 
 def parse_args() -> argparse.Namespace:
@@ -146,6 +349,17 @@ def parse_args() -> argparse.Namespace:
             "(default: 0.002)."
         ),
     )
+    parser.add_argument(
+        "--disable-url-augmentation",
+        action="store_true",
+        help="Disable URL hard-example augmentation (typosquatting/spoofing/urgent/shortener patterns).",
+    )
+    parser.add_argument(
+        "--url-augmentation-weight",
+        type=int,
+        default=2,
+        help="How strongly to weight curated URL hard examples (default: 2).",
+    )
     return parser.parse_args()
 
 
@@ -206,16 +420,40 @@ def load_url_dataset(path: Path) -> pd.DataFrame:
     return out
 
 
-def prepare_training_data(email_path: Path, url_path: Path) -> pd.DataFrame:
+def prepare_training_data(
+    email_path: Path,
+    url_path: Path,
+    use_url_augmentation: bool = True,
+    url_augmentation_weight: int = 2,
+) -> tuple[pd.DataFrame, dict[str, int]]:
     email_df = load_email_dataset(email_path)
     url_df = load_url_dataset(url_path)
 
+    base_rows = int(len(email_df) + len(url_df))
     combined = pd.concat([email_df, url_df], axis=0, ignore_index=True)
+
+    augmentation_rows_added = 0
+    if use_url_augmentation:
+        augmented_url_df = _build_augmented_url_dataset(repeat=url_augmentation_weight)
+        augmentation_rows_added = int(len(augmented_url_df))
+        combined = pd.concat([combined, augmented_url_df], axis=0, ignore_index=True)
+
     combined["text"] = combined["text"].fillna("").astype(str).str.strip()
     combined = combined[combined["text"].str.len() > 0].copy()
+    combined["text"] = combined["text"].str.replace(r"\s+", "", regex=True).where(
+        combined["source"].str.contains("url"),
+        combined["text"],
+    )
     combined["label"] = normalize_binary_labels(combined["label"])
+    combined = combined.drop_duplicates(subset=["text", "label"]).reset_index(drop=True)
 
-    return combined
+    augmentation_summary = {
+        "base_rows": base_rows,
+        "augmented_rows_added": augmentation_rows_added,
+        "total_rows_after_dedup": int(len(combined)),
+    }
+
+    return combined, augmentation_summary
 
 
 def build_word_vectorizer(max_features: int = 100_000, min_df: int = 5) -> TfidfVectorizer:
@@ -612,8 +850,15 @@ def main() -> None:
         )
     if args.calibrated_margin < 0:
         raise ValueError("--calibrated-margin must be >= 0")
+    if args.url_augmentation_weight < 1:
+        raise ValueError("--url-augmentation-weight must be >= 1")
 
-    df = prepare_training_data(email_path=email_path, url_path=url_path)
+    df, augmentation_summary = prepare_training_data(
+        email_path=email_path,
+        url_path=url_path,
+        use_url_augmentation=not args.disable_url_augmentation,
+        url_augmentation_weight=args.url_augmentation_weight,
+    )
 
     x_train, x_test, y_train, y_test, _source_train, source_test = train_test_split(
         df["text"],
@@ -664,6 +909,11 @@ def main() -> None:
             "email_dataset": str(email_path),
             "url_dataset": str(url_path),
             "rows_used": int(len(df)),
+            "augmentation": {
+                "enabled": not args.disable_url_augmentation,
+                "weight": int(args.url_augmentation_weight),
+                **augmentation_summary,
+            },
             "train_rows": int(len(x_train)),
             "test_rows": int(len(x_test)),
             "label_distribution": {
