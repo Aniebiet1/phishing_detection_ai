@@ -307,6 +307,11 @@ async function submitPrediction(useRawMode) {
         if (!response.ok) {
             throw new Error(data.detail || "Prediction failed.");
         }
+        if (state.auth?.token && data.details?.user_type !== "authenticated") {
+            state.auth = null;
+            localStorage.removeItem("micheal-ai-auth");
+            updateAuthPill();
+        }
         renderPredictionResult(data);
     } catch (error) {
         renderPredictionError(error.message || "Prediction failed.");
@@ -328,7 +333,8 @@ function renderPredictionResult(data) {
     const details = document.getElementById("resultDetails");
     if (details) {
         details.innerHTML = "";
-        const displayEmail = state.auth?.user?.email ? shortenEmail(state.auth.user.email, 10) : null;
+        const responseEmail = data.details?.user || "";
+        const displayEmail = responseEmail ? shortenEmail(responseEmail, 10) : null;
         const fragments = [
             `Source: ${data.details?.source || state.source}`,
             `Input length: ${data.details?.input_length || 0}`,
@@ -338,7 +344,7 @@ function renderPredictionResult(data) {
             const chip = document.createElement("span");
             chip.textContent = value;
             if (displayEmail && value.startsWith("Saved for:")) {
-                chip.title = `Saved for: ${state.auth.user.email}`;
+                chip.title = `Saved for: ${responseEmail}`;
             }
             details.appendChild(chip);
         });

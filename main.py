@@ -118,7 +118,15 @@ def _predict_and_log(
 ) -> PredictionResponse:
     model = _get_loaded_model()
     label, score, prediction_meta = predict_text_with_metadata(model, text=text, source=source)
-    user = _resolve_user(authorization) if authorization else None
+    user = None
+    if authorization:
+        try:
+            user = _resolve_user(authorization)
+        except HTTPException as exc:
+            # Classification should still work for unauthenticated users.
+            # If the token is missing/expired/invalid, continue as guest.
+            if exc.status_code != 401:
+                raise
     is_authenticated = user is not None
     guest_id = None if is_authenticated else f"guest_{uuid.uuid4().hex[:12]}"
 
@@ -134,7 +142,7 @@ def _predict_and_log(
         "source": source or mode,
         "input_length": len(text),
         "mode": mode,
-        "user_type": "authenticated" if is_authenticated else "anonymous",
+        "user_type": "authenticated" if is_authenticated else "guest",
         "guest_id": guest_id,
         "usage_entry": usage_entry,
         **prediction_meta,
