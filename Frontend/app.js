@@ -421,7 +421,7 @@ function renderModelRanking() {
                 <span class="pill">${formatPercent(model.phishing_f1)}</span>
             </div>
             <div class="ranking-bar"><span style="width:${Math.max(6, model.phishing_f1 * 100)}%"></span></div>
-            <div class="ranking-meta">Accuracy ${formatPercent(model.accuracy)} | Train ${model.train_seconds.toFixed(1)}s | Predict ${model.predict_seconds.toFixed(1)}s</div>
+            <div class="ranking-meta">Accuracy ${formatPercent(model.accuracy)} | Precision ${formatPercent(model.precision_phishing)} | Recall ${formatPercent(model.recall_phishing)} | Train ${model.train_seconds.toFixed(1)}s | Predict ${model.predict_seconds.toFixed(1)}s</div>
         `;
         container.appendChild(row);
     });
